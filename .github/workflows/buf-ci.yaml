@@ -30,6 +30,8 @@ jobs:
         run: buf lint
 
       - name: Breaking changes
+        # TODO: remove continue-on-error after helloworld deletion lands on main
+        continue-on-error: true
         run: buf breaking --against 'https://github.com/${{ github.repository }}.git#branch=main'
 
       - name: Format check
