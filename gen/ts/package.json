@@ -1,0 +1,13 @@
+{
+  "name": "@whetherlabs/nextbook-protos",
+  "version": "0.1.0",
+  "description": "Generated protobuf types for Nextbook services",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

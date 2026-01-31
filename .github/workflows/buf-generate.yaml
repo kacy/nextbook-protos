@@ -1,0 +1,46 @@
+name: Buf Generate
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'proto/**'
+      - 'buf.yaml'
+      - 'buf.gen.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bufbuild/buf-setup-action@v1
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Generate
+        run: |
+          buf generate
+          cd gen/go && go mod tidy
+
+      - name: Commit changes
+        run: |
+          git diff --quiet gen/ && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add gen/
+          git commit -m "chore: regenerate protobuf code"
+          git push

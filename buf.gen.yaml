@@ -1,0 +1,41 @@
+version: v2
+clean: false
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/kacy/whetherlabs/nextbook-protos/gen/go
+    - file_option: java_package_prefix
+      value: com.whetherlabs
+    - file_option: java_multiple_files
+      value: true
+plugins:
+  # Go
+  - remote: buf.build/protocolbuffers/go
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - remote: buf.build/grpc/go
+    out: gen/go
+    opt:
+      - paths=source_relative
+
+  # TypeScript (ts-proto via local plugin)
+  - local: node_modules/.bin/protoc-gen-ts_proto
+    out: gen/ts
+    opt:
+      - outputServices=grpc-js
+      - esModuleInterop=true
+      - env=node
+
+  # Swift
+  - remote: buf.build/apple/swift
+    out: gen/swift/Sources/WhetherlabsProtos
+  - remote: buf.build/grpc/swift
+    out: gen/swift/Sources/WhetherlabsProtos
+
+  # Kotlin / Java
+  - remote: buf.build/protocolbuffers/java
+    out: gen/kotlin
+  - remote: buf.build/grpc/kotlin
+    out: gen/kotlin
