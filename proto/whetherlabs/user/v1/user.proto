@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package whetherlabs.user.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// UserService provides user profile and account management.
+// All methods except GetPublicProfile require authentication.
+service UserService {
+  // GetProfile gets the authenticated user's profile.
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+
+  // UpdateProfile updates the authenticated user's profile.
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+
+  // GetPublicProfile gets a user's public profile by username.
+  rpc GetPublicProfile(GetPublicProfileRequest) returns (GetPublicProfileResponse);
+
+  // UploadContacts uploads hashed contacts for friend discovery.
+  // Checksums are SHA-256 hashes of normalized phone numbers or emails.
+  rpc UploadContacts(UploadContactsRequest) returns (UploadContactsResponse);
+
+  // ClaimPhoneNumber associates a verified phone number with the account.
+  // The checksum proves ownership via prior verification flow.
+  rpc ClaimPhoneNumber(ClaimPhoneNumberRequest) returns (ClaimPhoneNumberResponse);
+
+  // RequestAccountDeletion initiates account deletion.
+  // Returns a confirmation code that must be provided to confirm deletion.
+  rpc RequestAccountDeletion(RequestAccountDeletionRequest) returns (RequestAccountDeletionResponse);
+
+  // ConfirmAccountDeletion permanently deletes the account.
+  // Requires the confirmation code from RequestAccountDeletion.
+  rpc ConfirmAccountDeletion(ConfirmAccountDeletionRequest) returns (ConfirmAccountDeletionResponse);
+}
+
+// UserProfile is the authenticated user's full profile.
+message UserProfile {
+  string username = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  string bio = 4;
+  int32 books_read = 5;
+  int32 books_reading = 6;
+  int32 books_want_read = 7;
+  int32 review_count = 8;
+  float average_rating = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+// PublicUserProfile is a user's public-facing profile.
+message PublicUserProfile {
+  string username = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  string bio = 4;
+  int32 books_read = 5;
+  int32 review_count = 6;
+  google.protobuf.Timestamp member_since = 7;
+}
+
+message GetProfileRequest {}
+
+message GetProfileResponse {
+  UserProfile profile = 1;
+}
+
+message UpdateProfileRequest {
+  optional string username = 1;
+  optional string display_name = 2;
+  optional string avatar_url = 3;
+  optional string bio = 4;
+}
+
+message UpdateProfileResponse {
+  UserProfile profile = 1;
+}
+
+message GetPublicProfileRequest {
+  string username = 1;
+}
+
+message GetPublicProfileResponse {
+  PublicUserProfile profile = 1;
+}
+
+message UploadContactsRequest {
+  // SHA-256 hashes of normalized phone numbers or emails.
+  // Normalization: phone numbers as E.164 (e.g., +14155551234),
+  // emails as lowercase with whitespace trimmed.
+  repeated string checksums = 1;
+}
+
+message UploadContactsResponse {
+  // Number of contacts that matched existing users.
+  int32 matches_found = 1;
+  // Users found from the uploaded contacts.
+  repeated PublicUserProfile matched_users = 2;
+}
+
+message ClaimPhoneNumberRequest {
+  // SHA-256 hash of the verified phone number (E.164 format).
+  string checksum = 1;
+}
+
+message ClaimPhoneNumberResponse {
+  bool success = 1;
+  // The masked phone number for display (e.g., "+1 (***) ***-1234").
+  string masked_phone = 2;
+}
+
+message RequestAccountDeletionRequest {
+  // Optional reason for deletion (for analytics).
+  string reason = 1;
+}
+
+message RequestAccountDeletionResponse {
+  // Confirmation code to be provided to ConfirmAccountDeletion.
+  // Code expires after 24 hours.
+  string confirmation_code = 1;
+  // When the confirmation code expires.
+  google.protobuf.Timestamp expires_at = 2;
+}
+
+message ConfirmAccountDeletionRequest {
+  // The confirmation code from RequestAccountDeletion.
+  string confirmation_code = 1;
+}
+
+message ConfirmAccountDeletionResponse {
+  bool success = 1;
+  // When the account data will be fully purged (typically 30 days for recovery).
+  google.protobuf.Timestamp scheduled_purge_at = 2;
+}

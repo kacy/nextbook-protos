@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package whetherlabs.social.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// SocialService manages user relationships (follow, block, report).
+// All methods require authentication.
+service SocialService {
+  // FollowUser follows another user.
+  rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
+
+  // UnfollowUser unfollows a user.
+  rpc UnfollowUser(UnfollowUserRequest) returns (UnfollowUserResponse);
+
+  // GetFollowing gets users the specified user is following.
+  rpc GetFollowing(GetFollowingRequest) returns (GetFollowingResponse);
+
+  // GetFollowers gets users following the specified user.
+  rpc GetFollowers(GetFollowersRequest) returns (GetFollowersResponse);
+
+  // BlockUser blocks a user. Also unfollows if following.
+  rpc BlockUser(BlockUserRequest) returns (BlockUserResponse);
+
+  // UnblockUser unblocks a user.
+  rpc UnblockUser(UnblockUserRequest) returns (UnblockUserResponse);
+
+  // ListBlockedUsers lists users blocked by the authenticated user.
+  rpc ListBlockedUsers(ListBlockedUsersRequest) returns (ListBlockedUsersResponse);
+
+  // ReportUser reports a user for moderation review.
+  rpc ReportUser(ReportUserRequest) returns (ReportUserResponse);
+}
+
+// FollowedUser is a user in a following/followers list.
+message FollowedUser {
+  string username = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  string bio = 4;
+  int32 books_read = 5;
+  int32 review_count = 6;
+  google.protobuf.Timestamp member_since = 7;
+}
+
+// BlockedUser is a user in the blocked list.
+message BlockedUser {
+  string username = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  string reason = 4;
+  google.protobuf.Timestamp blocked_at = 5;
+}
+
+enum ReportReason {
+  REPORT_REASON_UNSPECIFIED = 0;
+  REPORT_REASON_SPAM = 1;
+  REPORT_REASON_HARASSMENT = 2;
+  REPORT_REASON_INAPPROPRIATE_CONTENT = 3;
+  REPORT_REASON_FAKE_ACCOUNT = 4;
+  REPORT_REASON_OTHER = 5;
+}
+
+message FollowUserRequest {
+  string username = 1;
+}
+
+message FollowUserResponse {
+  bool success = 1;
+  google.protobuf.Timestamp followed_at = 2;
+}
+
+message UnfollowUserRequest {
+  string username = 1;
+}
+
+message UnfollowUserResponse {
+  bool success = 1;
+}
+
+message GetFollowingRequest {
+  string username = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetFollowingResponse {
+  repeated FollowedUser users = 1;
+  int32 total_count = 2;
+}
+
+message GetFollowersRequest {
+  string username = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetFollowersResponse {
+  repeated FollowedUser users = 1;
+  int32 total_count = 2;
+}
+
+message BlockUserRequest {
+  string username = 1;
+  string reason = 2;
+}
+
+message BlockUserResponse {
+  bool success = 1;
+  google.protobuf.Timestamp blocked_at = 2;
+}
+
+message UnblockUserRequest {
+  string username = 1;
+}
+
+message UnblockUserResponse {
+  bool success = 1;
+}
+
+message ListBlockedUsersRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListBlockedUsersResponse {
+  repeated BlockedUser users = 1;
+  int32 total_count = 2;
+}
+
+message ReportUserRequest {
+  string username = 1;
+  ReportReason reason = 2;
+  string details = 3;
+}
+
+message ReportUserResponse {
+  bool success = 1;
+  string report_id = 2;
+}

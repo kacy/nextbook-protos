@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package whetherlabs.review.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ReviewService manages ratings and reviews.
+// All methods require authentication except GetBookReviews.
+service ReviewService {
+  // RateBook rates a book (0-5 stars, half-star increments).
+  // Automatically adds book to "read" shelf.
+  rpc RateBook(RateBookRequest) returns (RateBookResponse);
+
+  // ReviewBook creates or updates a review for a book.
+  rpc ReviewBook(ReviewBookRequest) returns (ReviewBookResponse);
+
+  // GetMyReview gets the authenticated user's review for a book.
+  rpc GetMyReview(GetMyReviewRequest) returns (GetMyReviewResponse);
+
+  // DeleteReview deletes the authenticated user's review for a book.
+  rpc DeleteReview(DeleteReviewRequest) returns (DeleteReviewResponse);
+
+  // GetBookReviews gets public reviews for a book.
+  rpc GetBookReviews(GetBookReviewsRequest) returns (GetBookReviewsResponse);
+
+  // GetUserReviews gets all reviews by a user.
+  rpc GetUserReviews(GetUserReviewsRequest) returns (GetUserReviewsResponse);
+}
+
+// Review is the user's review/rating for a book.
+message Review {
+  string isbn = 1;
+  float rating = 2;
+  string review_text = 3;
+  bool is_public = 4;
+  bool contains_spoilers = 5;
+  string started_reading = 6;
+  string finished_reading = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+// PublicReview is a review shown publicly (on book pages).
+message PublicReview {
+  string username = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  float rating = 4;
+  string review_text = 5;
+  bool contains_spoilers = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+// ReviewWithBook includes book info (for user's review list).
+message ReviewWithBook {
+  string isbn = 1;
+  string title = 2;
+  repeated string authors = 3;
+  string cover_image_url = 4;
+  float rating = 5;
+  string review_text = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+// RatingStats provides aggregate rating info for a book.
+message RatingStats {
+  float average = 1;
+  int32 count = 2;
+  // Distribution: key is rating*2 (0-10), value is count.
+  map<int32, int32> distribution = 3;
+}
+
+message RateBookRequest {
+  string isbn = 1;
+  float rating = 2;
+  optional string started_reading = 3;
+  optional string finished_reading = 4;
+}
+
+message RateBookResponse {
+  Review review = 1;
+}
+
+message ReviewBookRequest {
+  string isbn = 1;
+  optional float rating = 2;
+  string review_text = 3;
+  bool is_public = 4;
+  bool contains_spoilers = 5;
+  optional string started_reading = 6;
+  optional string finished_reading = 7;
+}
+
+message ReviewBookResponse {
+  Review review = 1;
+}
+
+message GetMyReviewRequest {
+  string isbn = 1;
+}
+
+message GetMyReviewResponse {
+  Review review = 1;
+}
+
+message DeleteReviewRequest {
+  string isbn = 1;
+}
+
+message DeleteReviewResponse {}
+
+message GetBookReviewsRequest {
+  string isbn = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetBookReviewsResponse {
+  repeated PublicReview reviews = 1;
+  int32 total_count = 2;
+  RatingStats stats = 3;
+}
+
+message GetUserReviewsRequest {
+  string username = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetUserReviewsResponse {
+  repeated ReviewWithBook reviews = 1;
+  int32 total_count = 2;
+}

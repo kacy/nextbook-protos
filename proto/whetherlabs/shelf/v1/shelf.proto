@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package whetherlabs.shelf.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ShelfService manages user bookshelves.
+// All methods require authentication.
+service ShelfService {
+  // ListShelves gets all shelves for the authenticated user.
+  rpc ListShelves(ListShelvesRequest) returns (ListShelvesResponse);
+
+  // GetShelf gets a specific shelf with its items.
+  rpc GetShelf(GetShelfRequest) returns (GetShelfResponse);
+
+  // CreateShelf creates a new custom shelf.
+  rpc CreateShelf(CreateShelfRequest) returns (CreateShelfResponse);
+
+  // UpdateShelf updates a shelf's name, description, or visibility.
+  rpc UpdateShelf(UpdateShelfRequest) returns (UpdateShelfResponse);
+
+  // DeleteShelf deletes a custom shelf.
+  rpc DeleteShelf(DeleteShelfRequest) returns (DeleteShelfResponse);
+
+  // AddToShelf adds a book to a shelf.
+  rpc AddToShelf(AddToShelfRequest) returns (AddToShelfResponse);
+
+  // RemoveFromShelf removes a book from a shelf.
+  rpc RemoveFromShelf(RemoveFromShelfRequest) returns (RemoveFromShelfResponse);
+
+  // MoveToShelf moves a book from one shelf to another.
+  rpc MoveToShelf(MoveToShelfRequest) returns (MoveToShelfResponse);
+
+  // GetBookShelves gets all shelves a book is on for the authenticated user.
+  rpc GetBookShelves(GetBookShelvesRequest) returns (GetBookShelvesResponse);
+}
+
+// Shelf represents a user's bookshelf.
+message Shelf {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  ShelfType type = 4;
+  bool is_public = 5;
+  int32 item_count = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+enum ShelfType {
+  SHELF_TYPE_UNSPECIFIED = 0;
+  SHELF_TYPE_WANT_TO_READ = 1;
+  SHELF_TYPE_CURRENTLY_READING = 2;
+  SHELF_TYPE_READ = 3;
+  SHELF_TYPE_CUSTOM = 4;
+}
+
+// ShelfItem is a book on a shelf.
+message ShelfItem {
+  string isbn = 1;
+  string title = 2;
+  repeated string authors = 3;
+  string cover_image_url = 4;
+  float user_rating = 5;
+  google.protobuf.Timestamp added_at = 6;
+  string notes = 7;
+}
+
+message ListShelvesRequest {}
+
+message ListShelvesResponse {
+  repeated Shelf shelves = 1;
+}
+
+message GetShelfRequest {
+  string shelf_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetShelfResponse {
+  Shelf shelf = 1;
+  repeated ShelfItem items = 2;
+  int32 total_count = 3;
+}
+
+message CreateShelfRequest {
+  string name = 1;
+  string description = 2;
+  bool is_public = 3;
+}
+
+message CreateShelfResponse {
+  Shelf shelf = 1;
+}
+
+message UpdateShelfRequest {
+  string shelf_id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional bool is_public = 4;
+}
+
+message UpdateShelfResponse {
+  Shelf shelf = 1;
+}
+
+message DeleteShelfRequest {
+  string shelf_id = 1;
+}
+
+message DeleteShelfResponse {}
+
+message AddToShelfRequest {
+  string shelf_id = 1;
+  string isbn = 2;
+  string notes = 3;
+}
+
+message AddToShelfResponse {
+  ShelfItem item = 1;
+}
+
+message RemoveFromShelfRequest {
+  string shelf_id = 1;
+  string isbn = 2;
+}
+
+message RemoveFromShelfResponse {}
+
+message MoveToShelfRequest {
+  string from_shelf_id = 1;
+  string to_shelf_id = 2;
+  string isbn = 3;
+}
+
+message MoveToShelfResponse {}
+
+message GetBookShelvesRequest {
+  string isbn = 1;
+}
+
+message GetBookShelvesResponse {
+  repeated Shelf shelves = 1;
+}
